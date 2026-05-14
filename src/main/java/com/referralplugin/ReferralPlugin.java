@@ -65,8 +65,6 @@ public class ReferralPlugin extends JavaPlugin {
         rewardManager.reload();
     }
 
-    // --- Getters ---
-
     public static ReferralPlugin getInstance() { return instance; }
     public DatabaseManager getDatabaseManager() { return databaseManager; }
     public ReferralManager getReferralManager() { return referralManager; }
@@ -76,7 +74,6 @@ public class ReferralPlugin extends JavaPlugin {
         return getConfig().getString("settings.prefix", "&8[&bReferral&8] &r");
     }
 
-    // Returns a raw string with prefix (for building components)
     public String getRawMessage(String key) {
         String msg = getConfig().getString("messages." + key, "&cMessage not found: " + key);
         return getPrefix() + msg;
@@ -90,21 +87,15 @@ public class ReferralPlugin extends JavaPlugin {
         return msg;
     }
 
-    // Send a plain translated message to any sender
     public void sendMessage(CommandSender sender, String key, String... replacements) {
-        Component component = Text.translate(getRawMessage(key, replacements));
-        if (sender instanceof Player player) {
-            player.sendMessage(component);
-        } else {
-            sender.sendMessage(Text.translateToPrimitive(component));
-        }
+        sendComponent(sender, Text.translate(getRawMessage(key, replacements)));
     }
 
-    // Send a pre-built component directly
     public void sendComponent(CommandSender sender, Component component) {
         if (sender instanceof Player player) {
             player.sendMessage(component);
         } else {
+            // Console fallback — strip to plain legacy string
             sender.sendMessage(Text.translateToPrimitive(component));
         }
     }
@@ -115,7 +106,6 @@ public class ReferralPlugin extends JavaPlugin {
         if (isDebug()) getLogger().info("[DEBUG] " + message);
     }
 
-    // Kept for legacy use in non-component contexts
     public static String colorize(String text) {
         return text == null ? "" : text.replace("&", "\u00A7");
     }
