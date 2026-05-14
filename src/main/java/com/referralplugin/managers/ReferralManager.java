@@ -2,6 +2,7 @@ package com.referralplugin.managers;
 
 import com.referralplugin.ReferralPlugin;
 import com.referralplugin.models.ReferralData;
+import com.referralplugin.utils.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -102,17 +103,17 @@ public class ReferralManager {
 
         Player referrer = Bukkit.getPlayer(referrerUUID);
         if (referrer != null && referrer.isOnline()) {
-            referrer.sendMessage(plugin.getMessage("referral-complete-referrer", "%referred%", referredName));
+            plugin.sendMessage(referrer, "referral-complete-referrer", "%referred%", referredName);
         }
 
         Player referred = Bukkit.getPlayer(referredUUID);
         if (referred != null && referred.isOnline()) {
-            referred.sendMessage(plugin.getMessage("referral-complete-referred"));
+            plugin.sendMessage(referred, "referral-complete-referred");
         }
 
         if (plugin.getConfig().getBoolean("settings.broadcast-on-complete", true)) {
-            Bukkit.broadcastMessage(plugin.getMessage("broadcast-complete",
-                    "%referrer%", referrerName, "%referred%", referredName));
+            Bukkit.broadcast(Text.translate(plugin.getRawMessage("broadcast-complete",
+                    "%referrer%", referrerName, "%referred%", referredName)));
         }
     }
 
@@ -176,7 +177,7 @@ public class ReferralManager {
         if (referredData == null || referredData.getReferredByUUID() == null) return;
         Player referrer = Bukkit.getPlayer(referredData.getReferredByUUID());
         if (referrer != null && referrer.isOnline()) {
-            referrer.sendMessage(plugin.getMessage("notify-join", "%referred%", referredName));
+            plugin.sendMessage(referrer, "notify-join", "%referred%", referredName);
         }
     }
 
