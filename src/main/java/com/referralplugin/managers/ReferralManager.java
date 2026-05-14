@@ -126,4 +126,68 @@ public class ReferralManager {
 
     public String generateRandomCode() {
         int length = plugin.getConfig().getInt("settings.code-length", 8);
-        String chars = plugin.getConfig().getStrin
+        String chars = plugin.getConfig().getString("settings.code-characters", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
+        return sb.toString();
+    }
+
+    public String applyReferralCode(Player player, String code) {
+        UUID uuid = player.getUniqueId();
+        ReferralData myData = plugin.getDatabaseManager().getPlayer(uuid);
+
+        if (myData != null && myData.hasUsedCode()) return "code-already-used";
+
+        long useCodeWindow = plugin.getConfig().getLong("settings.use-code-window", 86400);
+        if (useCodeWindow > 0 && myData != null) {
+            long secondsSinceJoin = (System.currentTimeMillis() - myData.getJoinTimestamp()) / 1000;
+            if (secondsSinceJoin > useCodeWindow) return "code-window-expired";
+        }
+
+        ReferralData referrerData = plugin.getDatabaseManager().getPlayerByCode(code);
+        if (referrerData == null) return "code-not-found";
+
+        if (plugin.getConfig().getBoolean("settings.prevent-self-referral", true)
+                && referrerData.getUuid().equals(uuid)) return "code-used-self";
+
+        int maxReferrals = plugin.getConfig().getInt("settings.max-referrals", 0);
+        if (maxReferrals > 0 && referrerData.getTotalReferrals() >= maxReferrals) return "max-referrals-reached";
+
+        plugin.getDatabaseManager().setReferredBy(uuid, referrerData.getUuid());
+
+        long requiredSeconds = plugin.getConfig().getLong("settings.required-play-time", 3600);
+        plugin.getDatabaseManager().createSession(uuid, referrerData.getUuid(), requiredSeconds);
+
+        long accumulated = plugin.getDatabaseManager().getAccumulatedSeconds(uuid);
+        accumulatedCache.put(uuid, Math.max(0, accumulated));
+        sessionStartTimes.put(uuid, System.currentTimeMillis());
+
+        return null;
+    }
+
+    public void saveAllSessions() {
+        for (UUID uuid : new HashSet<>(sessionStartTimes.keySet())) saveSessionTime(uuid);
+    }
+
+    public void reload() {}
+
+    private void notifyReferrer(UUID referredUUID, String referredName) {
+        ReferralData referredData = plugin.getDatabaseManager().getPlayer(referredUUID);
+        if (referredData == null || referredData.getReferredByUUID() == null) return;
+        Player referrer = Bukkit.getPlayer(referredData.getReferredByUUID());
+        if (referrer != null && referrer.isOnline()) {
+            plugin.sendMessage(referrer, "notify-join", "%referred%", referredName);
+        }
+    }
+
+    public long getTotalAccumulated(UUID uuid) {
+        long cached = accumulatedCache.getOrDefault(uuid, 0L);
+        Long startTime = sessionStartTimes.get(uuid);
+        if (startTime != null) cached += (System.currentTimeMillis() - startTime) / 1000;
+        return cached;
+    }
+
+    public Map<UUID, Long> getSessionStartTimes() { return sessionStartTimes; }
+    public Map<UUID, Long> getAccumulatedCache() { return accumulatedCache; }
+}
