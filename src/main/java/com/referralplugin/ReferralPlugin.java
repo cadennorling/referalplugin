@@ -6,6 +6,10 @@ import com.referralplugin.listeners.PlayerJoinListener;
 import com.referralplugin.listeners.PlayerQuitListener;
 import com.referralplugin.managers.ReferralManager;
 import com.referralplugin.managers.RewardManager;
+import com.referralplugin.utils.Text;
+import net.kyori.adventure.text.Component;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ReferralPlugin extends JavaPlugin {
@@ -61,26 +65,48 @@ public class ReferralPlugin extends JavaPlugin {
         rewardManager.reload();
     }
 
+    // --- Getters ---
+
     public static ReferralPlugin getInstance() { return instance; }
     public DatabaseManager getDatabaseManager() { return databaseManager; }
     public ReferralManager getReferralManager() { return referralManager; }
     public RewardManager getRewardManager() { return rewardManager; }
 
     public String getPrefix() {
-        return colorize(getConfig().getString("settings.prefix", "&8[&bReferral&8] &r"));
+        return getConfig().getString("settings.prefix", "&8[&bReferral&8] &r");
     }
 
-    public String getMessage(String key) {
+    // Returns a raw string with prefix (for building components)
+    public String getRawMessage(String key) {
         String msg = getConfig().getString("messages." + key, "&cMessage not found: " + key);
-        return colorize(getPrefix() + msg);
+        return getPrefix() + msg;
     }
 
-    public String getMessage(String key, String... replacements) {
-        String msg = getMessage(key);
+    public String getRawMessage(String key, String... replacements) {
+        String msg = getRawMessage(key);
         for (int i = 0; i + 1 < replacements.length; i += 2) {
             msg = msg.replace(replacements[i], replacements[i + 1]);
         }
         return msg;
+    }
+
+    // Send a plain translated message to any sender
+    public void sendMessage(CommandSender sender, String key, String... replacements) {
+        Component component = Text.translate(getRawMessage(key, replacements));
+        if (sender instanceof Player player) {
+            player.sendMessage(component);
+        } else {
+            sender.sendMessage(Text.translateToPrimitive(component));
+        }
+    }
+
+    // Send a pre-built component directly
+    public void sendComponent(CommandSender sender, Component component) {
+        if (sender instanceof Player player) {
+            player.sendMessage(component);
+        } else {
+            sender.sendMessage(Text.translateToPrimitive(component));
+        }
     }
 
     public boolean isDebug() { return getConfig().getBoolean("settings.debug", false); }
@@ -89,6 +115,7 @@ public class ReferralPlugin extends JavaPlugin {
         if (isDebug()) getLogger().info("[DEBUG] " + message);
     }
 
+    // Kept for legacy use in non-component contexts
     public static String colorize(String text) {
         return text == null ? "" : text.replace("&", "\u00A7");
     }
