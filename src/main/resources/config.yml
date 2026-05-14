@@ -1,0 +1,101 @@
+# ============================================================
+#                   ReferralPlugin Config
+# ============================================================
+
+database:
+  host: "localhost"
+  port: 3306
+  name: "referrals"
+  username: "root"
+  password: "password"
+  pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+
+settings:
+  prefix: "&8[&bReferral&8] &r"
+  required-play-time: 3600
+  use-username-as-code: false
+  code-length: 8
+  code-characters: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  case-insensitive-codes: true
+  max-referrals: 0
+  use-code-window: 86400
+  prevent-self-referral: true
+  reward-referred-player: true
+  broadcast-on-complete: true
+  notify-referrer-on-join: true
+  track-referral-count: true
+  debug: false
+
+referrer-rewards:
+  commands:
+    - "eco give %referrer% 1000"
+    - "lp user %referrer% permission set some.reward.permission true"
+  give-items: false
+  items: []
+
+referred-rewards:
+  commands:
+    - "eco give %referred% 500"
+  give-items: false
+  items: []
+
+milestones:
+  enabled: true
+  rewards:
+    5:
+      commands:
+        - "eco give %referrer% 5000"
+        - "broadcast &b%referrer% &7has reached &a5 referrals&7!"
+    10:
+      commands:
+        - "eco give %referrer% 15000"
+        - "lp user %referrer% parent add vip"
+        - "broadcast &b%referrer% &7has reached &a10 referrals&7!"
+    25:
+      commands:
+        - "eco give %referrer% 50000"
+        - "lp user %referrer% parent add mvp"
+        - "broadcast &b%referrer% &7has reached &a25 referrals&7!"
+
+messages:
+  no-permission: "&cYou don't have permission to do that."
+  player-only: "&cThis command can only be run by a player."
+  unknown-command: "&cUnknown command. Use &f/referral help &cfor help."
+  code-generated: "&aYour referral code is: &f&l%code%"
+  code-already-exists: "&aYour referral code is: &f&l%code% &7(already generated)"
+  code-not-found: "&cThat referral code does not exist."
+  code-used-self: "&cYou cannot use your own referral code."
+  code-already-used: "&cYou have already used a referral code."
+  code-window-expired: "&cYou can no longer use a referral code (window expired)."
+  code-success: "&aYou have successfully used the referral code &f%code%&a!"
+  max-referrals-reached: "&cThis player has reached the maximum number of referrals."
+  referral-pending: "&7Your referral from &f%referred% &7is still pending."
+  referral-complete-referrer: "&aReferral complete! &f%referred% &ahas played long enough — your reward has been issued!"
+  referral-complete-referred: "&aThank you for joining! You have received a welcome reward."
+  broadcast-complete: "&8[&bReferral&8] &f%referrer% &7received a referral reward from &f%referred%&7!"
+  notify-join: "&7Your referred player &f%referred% &7has joined the server!"
+  info-header: "&8&m----&r &bReferral Info &8&m----"
+  info-code: "&7Your Code: &f%code%"
+  info-referrals: "&7Total Referrals: &f%count%"
+  info-pending: "&7Pending Referrals: &f%pending%"
+  info-referred-by: "&7Referred By: &f%referrer%"
+  info-not-referred: "&7Referred By: &7None"
+  admin-reload: "&aConfiguration reloaded successfully."
+  admin-reset-code: "&aReset referral code for &f%player%&a."
+  admin-grant-referral: "&aManually granted referral reward to &f%player%&a."
+  admin-lookup-header: "&8&m----&r &bAdmin Lookup: %player% &8&m----"
+  admin-lookup-code: "&7Code: &f%code%"
+  admin-lookup-referrals: "&7Total Referrals: &f%count%"
+  admin-lookup-referred-by: "&7Referred By: &f%referrer%"
+  admin-player-not-found: "&cPlayer not found in the database."
+  help-header: "&8&m----------&r &bReferral Help &8&m----------"
+  help-code: "&f/referral code &7- Generate or view your referral code"
+  help-use: "&f/referral use <code> &7- Use a referral code"
+  help-info: "&f/referral info &7- View your referral statistics"
+  help-admin: "&f/referral admin &7- Admin subcommands (requires permission)"
+  help-footer: "&8&m-----------------------------------"
