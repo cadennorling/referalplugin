@@ -61,3 +61,48 @@ public class ReferralPlugin extends JavaPlugin {
     public void reload() {
         reloadConfig();
         referralManager.reload();
+        rewardManager.reload();
+    }
+
+    public static ReferralPlugin getInstance() { return instance; }
+    public DatabaseManager getDatabaseManager() { return databaseManager; }
+    public ReferralManager getReferralManager() { return referralManager; }
+    public RewardManager getRewardManager() { return rewardManager; }
+
+    public String getPrefix() {
+        return getConfig().getString("settings.prefix", "&8[&bReferral&8] &r");
+    }
+
+    public String getRawMessage(String key) {
+        String msg = getConfig().getString("messages." + key, "&cMessage not found: " + key);
+        return getPrefix() + msg;
+    }
+
+    public String getRawMessage(String key, String... replacements) {
+        String msg = getRawMessage(key);
+        for (int i = 0; i + 1 < replacements.length; i += 2) {
+            msg = msg.replace(replacements[i], replacements[i + 1]);
+        }
+        return msg;
+    }
+
+    public void sendMessage(CommandSender sender, String key, String... replacements) {
+        sendComponent(sender, Text.translate(getRawMessage(key, replacements)));
+    }
+
+    public void sendComponent(CommandSender sender, Component component) {
+        sender.sendMessage(Text.translateToPrimitive(component));
+    }
+
+    public boolean isDebug() {
+        return getConfig().getBoolean("settings.debug", false);
+    }
+
+    public void debug(String message) {
+        if (isDebug()) getLogger().info("[DEBUG] " + message);
+    }
+
+    public static String colorize(String text) {
+        return text == null ? "" : text.replace("&", "\u00A7");
+    }
+}
