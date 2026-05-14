@@ -1,0 +1,24 @@
+name: ReferralPlugin
+version: '${project.version}'
+main: com.referralplugin.ReferralPlugin
+api-version: '1.21'
+description: A highly configurable referral system for Spigot servers
+authors: [ReferralPlugin]
+prefix: ReferralPlugin
+
+commands:
+  referral:
+    description: Main referral command
+    usage: /referral <help|code|use|info|admin>
+    aliases: [ref, refer]
+
+permissions:
+  referral.use:
+    description: Allows players to use the referral system
+    default: true
+  referral.admin:
+    description: Allows access to admin referral commands
+    default: op
+  referral.bypass:
+    description: Bypass referral cooldowns and restrictions
+    default: op
