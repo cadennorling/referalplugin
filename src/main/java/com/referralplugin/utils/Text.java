@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class Text {
 
-    private static final Pattern PATTERN = Pattern.compile("([^\\\\]?)&([0-9a-fk-r])");
+    private static final Pattern PATTERN = Pattern.compile("([^\\\\]?)&([0-9a-fk-or])");
 
     private static final Map<String, String> COLOR_CODES = new HashMap<>() {{
         put("0", "<reset><color:black>");
@@ -85,24 +85,45 @@ public class Text {
     }
 
     private static String replacePrimitiveWithMiniMessage(String string) {
-        return PATTERN.matcher(string).replaceAll(matchResult ->
-                Matcher.quoteReplacement(matchResult.group(1) + COLOR_CODES.get(matchResult.group(2))));
+        return PATTERN.matcher(string).replaceAll(matchResult -> {
+            String code = matchResult.group(2);
+            String replacement = COLOR_CODES.get(code);
+            if (replacement == null) return Matcher.quoteReplacement(matchResult.group(0));
+            return Matcher.quoteReplacement(matchResult.group(1) + replacement);
+        });
+    }
+
+    /**
+     * Converts a Component to a legacy § color code string.
+     * Works on both Java and Bedrock players via Geyser.
+     */
+    public static String toLegacy(Component component) {
+        return LegacyComponentSerializer.legacySection().serialize(component);
+    }
+
+    /**
+     * Converts a raw & color code string directly to § color codes.
+     * Fastest path — use when you don't need a Component at all.
+     */
+    public static String toLegacyString(String text) {
+        if (text == null) return "";
+        return toLegacy(translate(text));
     }
 
     public static String translateToPrimitive(Component component) {
-        return LegacyComponentSerializer.legacyAmpersand().serialize(component);
+        return LegacyComponentSerializer.legacySection().serialize(component);
     }
 
-    public static List<String> translateToPrimitive(List<Component> component) {
-        return component.stream().map(Text::translateToPrimitive).toList();
+    public static List<String> translateToPrimitive(List<Component> components) {
+        return components.stream().map(c -> translateToPrimitive(c)).toList();
     }
 
     public static String translateToMiniMessage(Component component) {
         return MINI_MESSAGE.serialize(component);
     }
 
-    public static List<String> translateToMiniMessage(List<Component> component) {
-        return component.stream().map(Text::translateToMiniMessage).toList();
+    public static List<String> translateToMiniMessage(List<Component> components) {
+        return components.stream().map(c -> translateToMiniMessage(c)).toList();
     }
 
     public static String capitalize(String s) {
