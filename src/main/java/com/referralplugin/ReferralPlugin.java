@@ -18,6 +18,9 @@ public class ReferralPlugin extends JavaPlugin {
     private ReferralManager referralManager;
     private RewardManager rewardManager;
 
+    // Floodgate prefix for Bedrock player usernames (default is ".")
+    private static final String FLOODGATE_PREFIX = ".";
+
     @Override
     public void onEnable() {
         instance = this;
@@ -86,12 +89,27 @@ public class ReferralPlugin extends JavaPlugin {
         return msg;
     }
 
+    /**
+     * Send a message key to any sender.
+     * Converts to § legacy string so it works on both Java and Bedrock (Geyser).
+     */
     public void sendMessage(CommandSender sender, String key, String... replacements) {
         sendComponent(sender, Text.translate(getRawMessage(key, replacements)));
     }
 
+    /**
+     * Send a pre-built Component to any sender.
+     * Always converts to § legacy string — safe for Spigot, Java, and Bedrock via Geyser.
+     */
     public void sendComponent(CommandSender sender, Component component) {
         sender.sendMessage(Text.translateToPrimitive(component));
+    }
+
+    /**
+     * Returns true if the player name looks like a Bedrock player (Floodgate prefix).
+     */
+    public static boolean isBedrockPlayer(String playerName) {
+        return playerName != null && playerName.startsWith(FLOODGATE_PREFIX);
     }
 
     public boolean isDebug() {
